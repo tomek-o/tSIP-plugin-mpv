@@ -1,5 +1,5 @@
-# tSIP-plugin-GpioEt7000
+# tSIP-plugin-mpv
 
-Reading inputs from ET-7000 Ethernet I/O module.
+Plugin adding video playing capabilities (e.g. from file or RTSP/camera) to tSIP softphone.
 
-http://tomeko.net/software/SIPclient/ET7000/
+http://tomeko.net/software/SIPclient/mpv/
