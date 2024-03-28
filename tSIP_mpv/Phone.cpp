@@ -14,6 +14,7 @@
 #include "Settings.h"
 #include "Mpv.h"
 #include <string>
+#include <map>
 #include <stdio.h>
 
 
@@ -35,7 +36,7 @@ void *callbackCookie;	///< used by upper class to distinguish library instances 
 
 namespace {
 	std::string configPath = Utils::ReplaceFileExtension(Utils::GetDllPath(), ".cfg");
-	MPlayer *mpvInstance = NULL;
+	std::map<std::string, MPlayer*> players;
 }
 
 void __stdcall GetPhoneInterfaceDescription(struct S_PHONE_DLL_INTERFACE* interf) {
@@ -133,11 +134,11 @@ int __stdcall Disconnect(void) {
 		frmMain = NULL;
 	}
 #endif
-	if (mpvInstance)
+	for (std::map<std::string, MPlayer*>::iterator iter = players.begin(); iter != players.end(); ++iter)
 	{
-		delete mpvInstance;
-		mpvInstance = NULL;
+		delete iter->second;
 	}
+	players.clear();
 	return 0;
 }
 
@@ -226,42 +227,62 @@ inline bool StartsWith(const char* &a, const char *b)
 
 int __stdcall SendMessageText(const char* text) {
 	LOG("received message: %s", text);
-
-	if (StartsWith(text, "CREATE ")) {
-		if (mpvInstance != NULL) {
+	std::string playerName;
+	for (unsigned int i=0; ; i++) {
+		if (*text == '\0') {
+			LOG("Not found expected space after player name!");
 			return -1;
 		}
-		mpvInstance = new MPlayer();
+		if (*text == ' ') {
+			text++;
+			break;
+		}
+		playerName += *text;
+		text++;
+	}
+
+	if (StartsWith(text, "CREATE ")) {
+		if (players.find(playerName) != players.end()) {
+			LOG("Could not create player, [%s] already exists", playerName.c_str());
+			return -1;
+		}
 		HANDLE handle;
 		if (sscanf(text, "%p", &handle) == 1)
 		{
+			MPlayer *mpvInstance = new MPlayer();
 			mpvInstance->setParent(handle);
+			players[playerName] = mpvInstance;
 		}
 		else
 		{
 			LOG("No handle found in CREATE command!");
-			delete mpvInstance;
-			mpvInstance = NULL;
 		}
-	} else if (StartsWith(text, "PLAY ")) {
-		if (mpvInstance)
-		{
-			mpvInstance->play(text);
+	} else {
+		if (players.find(playerName) == players.end()) {
+			LOG("Player [%s] not found!", playerName.c_str());
+			return -1;
 		}
-	} else if (StartsWith(text, "STOP")) {
-		if (mpvInstance)
-		{
-        	mpvInstance->stop(false);
-		}
-	} else if (StartsWith(text, "VOLUME ")) {
-		if (mpvInstance)
-		{
-			int volume = atoi(text);
-			LOG("Volume = %d", volume);
-			mpvInstance->changeVolumeAbs(volume);
+		MPlayer *mpvInstance = players[playerName];
+		if (StartsWith(text, "PLAY ")) {
+			if (mpvInstance)
+			{
+				mpvInstance->play(text);
+			}
+		} else if (StartsWith(text, "STOP")) {
+			if (mpvInstance)
+			{
+				mpvInstance->stop(false);
+			}
+		} else if (StartsWith(text, "VOLUME ")) {
+			if (mpvInstance)
+			{
+				int volume = atoi(text);
+				LOG("Volume = %d", volume);
+				mpvInstance->changeVolumeAbs(volume);
+			}
 		}
 	}
-
+	
 	return 0;
 }
 
