@@ -67,6 +67,7 @@ public:
 	void __fastcall lineReceived(AnsiString line);
 	void __fastcall playerExited();
 
+	int create(void);
 	int play(AnsiString filename);
 	AnsiString getFilename(void) const
 	{

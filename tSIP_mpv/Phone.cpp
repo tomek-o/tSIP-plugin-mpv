@@ -251,6 +251,7 @@ int __stdcall SendMessageText(const char* text) {
 		{
 			MPlayer *mpvInstance = new MPlayer();
 			mpvInstance->setParent(handle);
+			mpvInstance->create();
 			players[playerName] = mpvInstance;
 		}
 		else

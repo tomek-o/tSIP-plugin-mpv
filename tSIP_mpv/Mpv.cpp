@@ -66,16 +66,24 @@ void MPlayer::onStopPlayingFn(void)
 		callbackStopPlaying();
 }
 
+int MPlayer::create(void)
+{
+	if (mpv == NULL)
+		mpvCreate();
+	if (mpv == NULL)
+	{
+		LOG("Failed to create mpv!");
+		return -1;
+	}
+	return 0;
+}
+
 int MPlayer::play(AnsiString filename)
 {
 	AnsiString cmdLine;
 	this->filename = filename;
 	useStopCallback = true;
 
-	if (mpv == NULL)
-		mpvCreate();
-	if (mpv == NULL)
-		return -1;
 	LOG("play %s", filename.c_str());
 
 	mediaInfo.videoBitrateKnown = false;
