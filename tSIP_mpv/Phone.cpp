@@ -228,7 +228,7 @@ inline bool StartsWith(const char* &a, const char *b)
 int __stdcall SendMessageText(const char* text) {
 	LOG("received message: %s", text);
 	std::string playerName;
-	for (unsigned int i=0; ; i++) {
+	for (;;) {
 		if (*text == '\0') {
 			LOG("Not found expected space after player name!");
 			return -1;
