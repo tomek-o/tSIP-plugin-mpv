@@ -85,6 +85,7 @@ public:
 	*/
 	int setSubVisibility(bool state);
 	int stop(bool useCallback = true);
+	int setPropertyString(AnsiString property, AnsiString value);
 
 	void onStopPlayingFn(void);
 	CallbackStopPlaying callbackStopPlaying;

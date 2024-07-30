@@ -99,7 +99,12 @@ int MPlayer::play(AnsiString filename)
 		int32_t flag = 0;
 		mpv_set_property(mpv, "pause", MPV_FORMAT_FLAG, &flag);
 	}
-
+#if 0
+	{
+		char *value = "udp";
+		mpv_set_property(mpv, "rtsp-transport", MPV_FORMAT_STRING, &value);
+	}
+#endif
 	AnsiString utf8name = System::AnsiToUtf8(filename);
 	const char *cmd[] = { "loadfile", utf8name.c_str(), NULL };
 	int status = mpv_command(mpv, cmd);
@@ -121,6 +126,23 @@ int MPlayer::pause(bool state)
 	}
 	return status;
 }
+
+int MPlayer::setPropertyString(AnsiString property, AnsiString value)
+{
+	if (mpv == NULL)
+	{
+		LOG("mpv instance for player %p not created!", this);
+		return -1;
+	}
+	LOG("setting property string [%s] to [%s]", property.c_str(), value.c_str());
+	int status = mpv_set_property_string(mpv, property.c_str(), value.c_str());
+	if (status != 0)
+	{
+		LOG("mpv_set_property_string: error: %d %s", status, mpv_error_string(status));
+	}
+	return status;
+}
+
 
 int MPlayer::frameStep(void)
 {
@@ -200,7 +222,10 @@ int MPlayer::changeVolume(int delta)
 int MPlayer::changeVolumeAbs(int val)
 {
 	if (mpv == NULL)
+	{
+		LOG("changeVolumeAbs: mpv not created!");
 		return -1;
+	}
 
 	AnsiString msg;
 	cfg.softVolLevel = val;

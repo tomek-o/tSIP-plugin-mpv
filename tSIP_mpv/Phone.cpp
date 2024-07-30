@@ -281,6 +281,24 @@ int __stdcall SendMessageText(const char* text) {
 				LOG("Volume = %d", volume);
 				mpvInstance->changeVolumeAbs(volume);
 			}
+		} else if (StartsWith(text, "SET_PROPERTY_STRING ")) {
+			if (mpvInstance)
+			{
+				AnsiString textCopy = text;
+				char* t = textCopy.c_str();
+				char* arg = strchr(t, ' ');
+				if (arg == NULL)
+				{
+					LOG("SET_PROPERTY_STRING: missing argument (space-separated)");
+				}
+				else
+				{
+					*arg = NULL;
+					mpvInstance->setPropertyString(t, arg+1);
+				}
+			}
+		} else {
+        	LOG("Argument not recognized!");
 		}
 	}
 	
