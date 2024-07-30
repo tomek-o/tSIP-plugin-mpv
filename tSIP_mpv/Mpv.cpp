@@ -296,7 +296,7 @@ void __fastcall MPlayer::timerTimer(TObject *Sender)
 
 void MPlayer::onMpvEvent(const mpv_event &e)
 {
-	int event_id = e.event_id;
+	mpv_event_id event_id = e.event_id;
 
 	if (event_id != MPV_EVENT_LOG_MESSAGE && event_id != MPV_EVENT_PROPERTY_CHANGE)
 	{
