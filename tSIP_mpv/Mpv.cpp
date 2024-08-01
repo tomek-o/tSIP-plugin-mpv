@@ -296,12 +296,21 @@ void __fastcall MPlayer::timerTimer(TObject *Sender)
 
 void MPlayer::onMpvEvent(const mpv_event &e)
 {
-	mpv_event_id event_id = e.event_id;
+	/** \note mpv_event_id is defined in header as event, which is not quite portable
+		event_id type should not be changed to mpv_event_id below!
+	*/
+	int event_id = e.event_id;
+#ifdef __BORLANDC__
+#pragma warn -8006	// disable "Initializing mpv_event_id with int" warning
+#endif
+	const char *event_name = mpv_event_name(event_id);
+#ifdef __BORLANDC__
+#pragma warn .8006
+#endif
 
 	if (event_id != MPV_EVENT_LOG_MESSAGE && event_id != MPV_EVENT_PROPERTY_CHANGE)
 	{
-		const char *name = mpv_event_name(event_id);
-		LOG("Event: id = %d (%s)", event_id, name);
+		LOG("Event: id = %d (%s)", static_cast<int>(event_id), event_name);
 	}
 	switch (event_id)
 	{
@@ -312,13 +321,14 @@ void MPlayer::onMpvEvent(const mpv_event &e)
 	}
 	case MPV_EVENT_PROPERTY_CHANGE: {
 		const mpv_event_property *prop = (mpv_event_property *)e.data;
+		// ignore logging of some properties
 		if (strcmp(prop->name, "time-pos") &&
 			strcmp(prop->name, "video-bitrate") &&
 			strcmp(prop->name, "audio-bitrate") &&
-			strcmp(prop->name, "volume")
+			strcmp(prop->name, "volume") &&
+			strcmp(prop->name, "duration")	/* ignored because of constant updates when receiving RTSP */
 			) {
-			const char *name = mpv_event_name(event_id);
-			LOG("Event: id = %d (%s: %s)", event_id, name, prop->name);
+			LOG("Event: id = %d (%s: %s)", static_cast<int>(event_id), event_name, prop->name);
 		}
         if (strcmp(prop->name, "media-title") == 0) {
             char *data = NULL;
