@@ -316,7 +316,9 @@ void MPlayer::onMpvEvent(const mpv_event &e)
 	{
 	case MPV_EVENT_LOG_MESSAGE: {
 		const mpv_event_log_message *msg = (const mpv_event_log_message *)e.data;
-		LOG("%s", msg->text);
+		AnsiString logLine = msg->text;
+		logLine = logLine.TrimRight();
+		LOG("%s", logLine.c_str());
 		break;
 	}
 	case MPV_EVENT_PROPERTY_CHANGE: {
